@@ -18,16 +18,25 @@ function clusterFilter(clustersToDraw, meshes, clusters, config) {
 }
 
 function fetchDat(dataName) {
-    // Construct the direct path to the JSON file.
-    const dataPath = `static/data/scatterplots/${dataName}`;
-    console.log(`Fetching data from: ${dataPath}`);
+    // --- CONSTRUCT THE CORRECT GIT LFS URL ---
+    const GITHUB_USER = "Guozihengwww"; // Your GitHub username
+    const REPO_NAME = "PixelatedScatter-Demo"; // Your repository name
+    const BRANCH_NAME = "main"; // The branch your GitHub Pages is deployed from
+
+    const dataPath = `https://media.githubusercontent.com/media/${GITHUB_USER}/${REPO_NAME}/${BRANCH_NAME}/static/data/scatterplots/${dataName}`;
+
+    console.log(`Fetching LFS data from: ${dataPath}`);
 
     return new Promise(function (resolve, reject) {
-        // Use the browser's native fetch API.
         fetch(dataPath)
             .then(response => {
+                // Check if the request was successful
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    // If the response is not OK, it might be a text file with an error message.
+                    // Let's try to read it to provide more context.
+                    return response.text().then(text => {
+                        throw new Error(`HTTP error! Status: ${response.status}, Message: ${text}`);
+                    });
                 }
                 return response.json(); // Parse the JSON from the response
             })
@@ -36,7 +45,7 @@ function fetchDat(dataName) {
             })
             .catch(error => {
                 console.error("Error fetching data:", error);
-                alert(`Failed to load dataset: ${dataName}. Check if the file exists at the correct path.`);
+                alert(`Failed to load dataset: ${dataName}. Check the URL and if the file is correctly tracked by LFS.`);
                 reject(error);
             });
     });
